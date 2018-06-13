@@ -25,6 +25,9 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 
+	/*****************************************************************************
+   	*  Initialization
+   	****************************************************************************/
 	if (!is_initialized_) {
 		// Initialize number of particles
 		num_particles = 100;
@@ -64,6 +67,9 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
+	/*****************************************************************************
+   	*  Initialization
+   	****************************************************************************/
 	// Initialize random engine
 	default_random_engine gen;
 
@@ -72,6 +78,9 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	normal_distribution<double> noise_y(0, std_pos[1]);
 	normal_distribution<double> noise_theta(0, std_pos[2]);
 	
+	/*****************************************************************************
+   	*  Prediction
+   	****************************************************************************/
 	// Calculate the new state
 	int i = 0;
 	for (i = 0; i < num_particles; i++) {
@@ -98,7 +107,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	//   observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
-
+	
 	// TODO: Loop through all observation measurements
 	int i = 0, j = 0;
 	for (i = 0; i < observations.size(); i++) {
@@ -136,6 +145,103 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   and the following is a good resource for the actual equation to implement (look at equation 
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
+	
+	int i = 0, j = 0, k = 0;
+	for (i = 0; i < num_particles; i++) {
+	/*****************************************************************************
+   	*  Filter landmarks
+   	****************************************************************************/
+	// TODO: Find landmarks within sensor range of particle
+	  // Create vector for storing filtered landmarks
+	  vector<LandmarkObs> vec_IR_landmarks;
+	
+	  // Calculate sensor range as radius square
+	  double radius_square = sensor_range * sensor_range;
+	  
+	  // Loop through all the landmarks
+	  for (j = 0; j < ; j++) {
+	    // Extract data for better readability
+	    int   id_landmark = map_landmarks.landmark_list[j].id_i;
+	    float x_landmark  = map_landmarks.landmark_list[j].x_f;
+	    float y_landmark  = map_landmarks.landmark_list[j].y_f;
+		  
+	    // Calculate the distance between observation measurement and landmark
+	    double delta_x = particles[i].x - x_landmark;
+	    double delta_y = particles[i].y - y_landmark;
+	    
+	    // Check if it is in range then push it to the end of the filter list
+	    if (delta_x * delta_x + delta_y * delta_y <= radius_square) {
+	      vec_IR_landmarks.push_back(LandmarkObs{id_landmark, x_landmark, y_landmark});
+	    }
+	  }
+	
+	/*****************************************************************************
+   	*  Transform coordinates
+   	****************************************************************************/
+	// TODO: Transform from vehicle coordinates to map coordinates
+	  // Create vector for storing transformed observation measurements
+	  vector<LandmarkObs> vec_transformed_obs;
+	  
+	  // Loop through all observation measurements
+	  for (j = 0; j < observations.size(); j++) {
+	    double map_x = p_x + cos(particles[i].theta) * observations[j].x - sin(particles[i].theta) * observations[j].y;
+	    double map_y = p_y + sin(particles[i].theta) * observations[j].x + cos(particles[i].theta) * observations[j].y;
+	
+	    vec_transformed_obs.push_back(LandmarkObs{observations[j].id, map_x, map_y});
+	  }
+		
+	/*****************************************************************************
+   	*  Identify the observation measurements
+   	****************************************************************************/
+	// TODO: Association the observation measurements with the predicted landmarks
+	  // Run data association with predicted landmarks and transformed observation measurements
+	  dataAssociation(vec_IR_landmarks, vec_transformed_obs);
+		
+	/*****************************************************************************
+   	*  Calculate weight
+   	****************************************************************************/
+	// TODO: Calculate weight with mult-variate Gaussian distribution
+	  // Reinitialize weight
+	  particles[i].weight = 1.0;
+	  
+	  // Calculate normalization term
+	  double gauss_norm = 1 / ( 2 * M_PI * std_landmark[0] * std_landmark[1]);
+		
+	  // Loop through all transformed observation measurements
+	  for (j = 0; j < vec_transformed_obs.size(); j++) {
+	    // Define inputs
+	    double obs_x  = vec_transformed_obs[j].x;
+	    double obs_y  = vec_transformed_obs[j].y;
+	    int    obs_id = vec_transformed_obs[j].id;
+	    
+	    // Find x, y of predicted landmark with matched id
+	    bool flag_match = false;
+	    while (!flag_match && k < vec_IR_landmarks.size()) {
+	      if (vec_IR_landmarks[k] == obs_id) {
+	        landmark_x = vec_IR_landmarks[k].x;
+		landmark_y = vec_IR_landmarks[k].y;
+	        flag_match = true;
+	      }
+	      k++;
+	    }
+	    
+	    // Calculate exponent
+	    double exponent = ((obs_x - landmark_x)**2) / (2 * std_landmark[0]**2) + ((obs_y - landmark_y)**2) / (2 * std_landmark[1]**2);
+		  
+	    // Calculate weight using normalization terms and exponent
+	    double w = gauss_norm * math.exp(-exponent);
+		  
+	    // Check if w is 0 or close to 0
+	    if (fabs(w) < 0.00001) {
+	      // Multiply with minimum number
+	      particles[i].weight *= 0.00001;
+	    }
+	    else {
+	      // Multiply with calculated weight
+	      particles[i].weight *= w;
+	    }
+	  }
+	}
 }
 
 void ParticleFilter::resample() {
