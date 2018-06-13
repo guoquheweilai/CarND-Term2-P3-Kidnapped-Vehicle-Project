@@ -99,6 +99,29 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
 
+	// TODO: Loop through all observation measurements
+	int i = 0, j = 0;
+	for (i = 0; i < observations.size(); i++) {
+	  // Initialize placeholder for map id from map
+	  int id_map = -1;
+	  // Initialize the minimum distance with a big number
+	  double min_dist = numeric_limits<double>::max();  
+		
+	  // TODO: Loop through all predicted landmarks
+	  for (j = 0; j < predicted.size(); j++) {
+	    // Calculate the distance between observation measurements and predicted landmarks
+	    double dist_obs_land = dist(observations[i].x, observations[i].y, predicted[j].x, predicted[j].y);
+	    
+	    // Update the map id and minimum distance when a smaller distance was founded
+	    if (dist_obs_land < min_dist) {
+	      id_map = predicted[j].id;
+	      min_dist = dist_obs_land;
+	    }
+	  }
+	
+	  // Update the observation's id with the nearest predicted landmark
+	  observations[i].id = id_map;
+	}
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
