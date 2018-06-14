@@ -248,7 +248,64 @@ void ParticleFilter::resample() {
 	// TODO: Resample particles with replacement with probability proportional to their weight. 
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
-
+	
+	/*****************************************************************************
+   	*  Initialization
+   	****************************************************************************/
+	// TODO: Get all the weights from the particles
+	// TODO: Get the maximum weight from the particles
+	
+	// Initialize random engine
+	default_random_engine gen;
+	
+	// Create vector for storing weights
+	vector<double> ws;
+	
+	// Initialize maximum weight with minimum value
+	double mw = numeric_limits<double>::min();
+	
+	// Loop through all the particles
+	int i = 0;
+	for (i = 0; i < num_particles; i++) {
+	  ws.push_back(particles[i].weight);
+	  
+	  // Check if it is larger than the maximum weight
+	  if ( particles[i].weight > mw) {
+	    mw = particles[i].weight;
+	  }
+	}
+	
+	// TODO: Get the random starting index
+	// TODO: Get the random distribution for beta
+	
+	// Create uniform random distributions
+	uniform_int_distribution<int> dist_index(0, num_particles - 1);  // Random index
+	uniform_real_distribution<int> dist_beta(0.0, mw);               // Random beta
+	
+	// Initialize index
+	int index = dist_index(gen);
+	
+	/*****************************************************************************
+   	*  Resample the wheel
+   	****************************************************************************/
+	// TODO: Resample the wheel
+	// Create vector for storing resampled particles
+	vector<Particle> Resampled_P;
+	
+	int beta = 0.0;
+	for (i = 0; i < num_particles; i++) {
+	  // Increase beta
+	  beta += dist_beta(gen) * 2.0;
+	  // Increase index
+	  while ( beta > ws[index]) {
+	    beta -= ws[index];
+	    index = (index + 1) % num_particles;
+	  }
+	  Resampled_P.push_back(particles[index]);
+	}
+	
+	// Update the particles with resampled result
+	particles = Resampled_P;
 }
 
 Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<int>& associations, 
