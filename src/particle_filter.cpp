@@ -28,7 +28,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	/*****************************************************************************
    	*  Initialization
    	****************************************************************************/
-	if (!is_initialized_) {
+	if (!is_initialized) {
 		// Initialize number of particles
 		num_particles = 100;
 
@@ -109,7 +109,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	//   implement this method and use it as a helper during the updateWeights phase.
 	
 	// TODO: Loop through all observation measurements
-	int i = 0, j = 0;
+	unsigned int i = 0, j = 0;
 	for (i = 0; i < observations.size(); i++) {
 	  // Initialize placeholder for map id from map
 	  int id_map = -1;
@@ -146,7 +146,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
 	
-	int i = 0, j = 0, k = 0;
+	unsigned int i = 0, j = 0, k = 0;
 	for (i = 0; i < num_particles; i++) {
 	/*****************************************************************************
    	*  Filter landmarks
@@ -154,20 +154,25 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	// TODO: Find landmarks within sensor range of particle
 	  // Create vector for storing filtered landmarks
 	  vector<LandmarkObs> vec_IR_landmarks;
+
+	  // Extract x, y, theta
+	  double p_x     = particles[i].x;     // Position x
+	  double p_y     = particles[i].y;     // Position y
+	  double p_theta = particles[i].theta; // Theta
 	
 	  // Calculate sensor range as radius square
 	  double radius_square = sensor_range * sensor_range;
 	  
 	  // Loop through all the landmarks
-	  for (j = 0; j < ; j++) {
+	  for (j = 0; j < map_landmarks.landmark_list.size(); j++) {
 	    // Extract data for better readability
 	    int   id_landmark = map_landmarks.landmark_list[j].id_i;
 	    float x_landmark  = map_landmarks.landmark_list[j].x_f;
 	    float y_landmark  = map_landmarks.landmark_list[j].y_f;
 		  
 	    // Calculate the distance between observation measurement and landmark
-	    double delta_x = particles[i].x - x_landmark;
-	    double delta_y = particles[i].y - y_landmark;
+	    double delta_x = p_x - x_landmark;
+	    double delta_y = p_y - y_landmark;
 	    
 	    // Check if it is in range then push it to the end of the filter list
 	    if (delta_x * delta_x + delta_y * delta_y <= radius_square) {
@@ -184,8 +189,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	  
 	  // Loop through all observation measurements
 	  for (j = 0; j < observations.size(); j++) {
-	    double map_x = p_x + cos(particles[i].theta) * observations[j].x - sin(particles[i].theta) * observations[j].y;
-	    double map_y = p_y + sin(particles[i].theta) * observations[j].x + cos(particles[i].theta) * observations[j].y;
+	    double map_x = p_x + cos(p_theta) * observations[j].x - sin(p_theta) * observations[j].y;
+	    double map_y = p_y + sin(p_theta) * observations[j].x + cos(p_theta) * observations[j].y;
 	
 	    vec_transformed_obs.push_back(LandmarkObs{observations[j].id, map_x, map_y});
 	  }
@@ -205,7 +210,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	  particles[i].weight = 1.0;
 	  
 	  // Calculate normalization term
-	  double gauss_norm = 1 / ( 2 * M_PI * std_landmark[0] * std_landmark[1]);
+	  double std_x = std_landmark[0];
+	  double std_y = std_landmark[1];
+	  double gauss_norm = 1 / ( 2 * M_PI * std_x * std_y);
 		
 	  // Loop through all transformed observation measurements
 	  for (j = 0; j < vec_transformed_obs.size(); j++) {
@@ -215,21 +222,24 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	    int    obs_id = vec_transformed_obs[j].id;
 	    
 	    // Find x, y of predicted landmark with matched id
+		double landmark_x, landmark_y;
 	    bool flag_match = false;
 	    while (!flag_match && k < vec_IR_landmarks.size()) {
-	      if (vec_IR_landmarks[k] == obs_id) {
+	      if (vec_IR_landmarks[k].id == obs_id) {
 	        landmark_x = vec_IR_landmarks[k].x;
-		landmark_y = vec_IR_landmarks[k].y;
+		    landmark_y = vec_IR_landmarks[k].y;
 	        flag_match = true;
 	      }
 	      k++;
 	    }
 	    
 	    // Calculate exponent
-	    double exponent = ((obs_x - landmark_x)**2) / (2 * std_landmark[0]**2) + ((obs_y - landmark_y)**2) / (2 * std_landmark[1]**2);
+		double dx = obs_x - landmark_x;
+		double dy = obs_y - landmark_y;
+	    double exponent = (dx * dx) / (2 * std_x * std_x) + (dy * dy) / (2 * std_y * std_y);
 		  
 	    // Calculate weight using normalization terms and exponent
-	    double w = gauss_norm * math.exp(-exponent);
+	    double w = gauss_norm * exp(-exponent);
 		  
 	    // Check if w is 0 or close to 0
 	    if (fabs(w) < 0.00001) {
