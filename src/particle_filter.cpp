@@ -146,7 +146,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
 	
-	unsigned int i = 0, j = 0, k = 0;
+	int i = 0;
+	unsigned int j = 0, k = 0;
 	for (i = 0; i < num_particles; i++) {
 	/*****************************************************************************
    	*  Filter landmarks
@@ -290,7 +291,7 @@ void ParticleFilter::resample() {
 	
 	// Create uniform random distributions
 	uniform_int_distribution<int> dist_index(0, num_particles - 1);  // Random index
-	uniform_real_distribution<int> dist_beta(0.0, mw);               // Random beta
+	uniform_real_distribution<double> dist_beta(0.0, mw);               // Random beta
 	
 	// Initialize index
 	int index = dist_index(gen);
@@ -326,9 +327,17 @@ Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<i
     // sense_x: the associations x mapping already converted to world coordinates
     // sense_y: the associations y mapping already converted to world coordinates
 
+	// Clear the previous associations
+	particle.associations.clear();
+	particle.sense_x.clear();
+	particle.sense_y.clear();
+
+	// Associate new landmark to particle
     particle.associations= associations;
     particle.sense_x = sense_x;
     particle.sense_y = sense_y;
+
+	return particle;
 }
 
 string ParticleFilter::getAssociations(Particle best)
