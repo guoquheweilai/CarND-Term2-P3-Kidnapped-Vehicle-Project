@@ -303,7 +303,7 @@ void ParticleFilter::resample() {
 	// Create vector for storing resampled particles
 	vector<Particle> Resampled_P;
 	
-	int beta = 0.0;
+	double beta = 0.0;
 	for (i = 0; i < num_particles; i++) {
 	  // Increase beta
 	  beta += dist_beta(gen) * 2.0;
