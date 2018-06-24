@@ -1,10 +1,9 @@
 # CarND-Term2-P3-Kidnapped-Vehicle  
 ## Overview  
-This repository contains all the code needed to complete the final project for the Localization course in Udacity's Self-Driving Car Nanodegree.
-
-Your robot has been kidnapped and transported to a new location! Luckily it has a map of this location, a (noisy) GPS estimate of its initial location, and lots of (noisy) sensor and control data.
-
-In this project you will implement a 2 dimensional particle filter in C++. Your particle filter will be given a map and some initial localization information (analogous to what a GPS would provide). At each time step your filter will also get observation and control data.
+Your robot has been kidnapped and transported to a new location! Luckily it has a map of this location, a (noisy) GPS estimate of its initial location, and lots of (noisy) sensor and control data.  
+In this project you will implement a 2 dimensional particle filter in C++. Your particle filter will be given a map and some initial localization information (analogous to what a GPS would provide). At each time step your filter will also get observation and control data.  
+There is a simulator provided by Udacity ([Term 2 Simulator Release](https://github.com/udacity/self-driving-car-sim/releases/)) which can generate noisy landmark measurements. And you will be using those measurements to predict and match them to the given landmark location. In that way, you can tell where is your car and where it is heading to. This implementation is known as localization.  
+Here is the link to the [orginal repository](https://github.com/udacity/CarND-Kidnapped-Vehicle-Project) provided by Udaciy. This repository contains all the code needed to complete the final project for the Localization course in Udacity's Self-Driving Car Nanodegree.
 
 ## Prerequisites/Dependencies  
 * cmake: 3.5  
