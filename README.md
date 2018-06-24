@@ -59,7 +59,7 @@ Yes, it does.
 ## Code Style  
 Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
 ## Videos
-Video recordings for success case.  
+Video recordings for success cases.  
 Success case for running my particle filter code.  
 ![Successful running](./videos/CarND-Term2-P3-self_driving_car_nanodegree_program_6_21_2018_10_28_42_PM.gif)  
 
